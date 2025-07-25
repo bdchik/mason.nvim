@@ -19,7 +19,7 @@ local TIMEOUT_SECONDS = 30
 ---| '"PATCH"'
 ---| '"DELETE"'
 
----@alias FetchOpts {out_file: string?, method: FetchMethod?, headers: table<string, string>?, data: string?}
+---@alias FetchOpts {out_file: string?, method: FetchMethod?, curl_extra_args: string?, wget_extra_args: string?, headers: table<string, string>?, data: string?}
 
 ---@async
 ---@param url string The url to fetch.
@@ -99,6 +99,7 @@ local function fetch(url, opts)
             "-o",
             "/dev/null",
             "-O",
+            opts.wget_extra_args and vim.split(opts.wget_extra_args, " ") or vim.NIL,
             opts.out_file or "-",
             "-T",
             TIMEOUT_SECONDS,
@@ -127,6 +128,7 @@ local function fetch(url, opts)
                 "-X",
                 opts.method,
             },
+            opts.curl_extra_args and vim.split(opts.curl_extra_args, " ") or vim.NIL,
             opts.data and { "-d", "@-" } or vim.NIL,
             opts.out_file and { "-o", opts.out_file } or vim.NIL,
             { "--connect-timeout", TIMEOUT_SECONDS },
