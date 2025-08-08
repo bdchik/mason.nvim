@@ -112,6 +112,8 @@ function GitHubRegistrySource:install()
         local zip_file = path.concat { self.root_dir, "registry.json.zip" }
         try(fetch(settings.current.github.download_url_template:format(self.repo, version, "registry.json.zip"), {
             out_file = zip_file,
+            curl_extra_args = settings.current.github.curl_extra_args,
+            wget_extra_args = settings.current.github.wget_extra_args,
         }):map_err(_.always "Failed to download registry archive."))
         local zip_buffer = fs.async.read_file(zip_file)
         local registry_contents = try(
