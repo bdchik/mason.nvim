@@ -20,6 +20,16 @@ local TIMEOUT_SECONDS = 30
 ---| '"DELETE"'
 
 ---@alias FetchOpts {out_file: string?, method: FetchMethod?, curl_extra_args: string?, wget_extra_args: string?, headers: table<string, string>?, data: string?}
+---@alias FetchOpts {out_file: string?, method: FetchMethod?, curl_extra_args: string[]|fun():string[], wget_extra_args: string[]|fun():string[], headers: table<string, string>?, data: string?}
+
+local function resolve_args(args)
+    if type(args) == "function" then
+        return args()
+    elseif type(args) == "table" then
+        return args
+    end
+    return {}
+end
 
 ---@async
 ---@param url string The url to fetch.
@@ -99,7 +109,7 @@ local function fetch(url, opts)
             "-o",
             "/dev/null",
             "-O",
-            opts.wget_extra_args and vim.split(opts.wget_extra_args, " ") or vim.NIL,
+            resolve_args(opts.wget_extra_args),
             opts.out_file or "-",
             "-T",
             TIMEOUT_SECONDS,
@@ -128,7 +138,7 @@ local function fetch(url, opts)
                 "-X",
                 opts.method,
             },
-            opts.curl_extra_args and vim.split(opts.curl_extra_args, " ") or vim.NIL,
+            resolve_args(opts.curl_extra_args),
             opts.data and { "-d", "@-" } or vim.NIL,
             opts.out_file and { "-o", opts.out_file } or vim.NIL,
             { "--connect-timeout", TIMEOUT_SECONDS },
